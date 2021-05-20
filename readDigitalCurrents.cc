@@ -68,8 +68,12 @@
 #include <fun4all/SubsysReco.h>           // for SubsysReco
 
 //#include "SvtxEvaluator.h"
+#include "tpc/TpcDefs.h"
 
 #include <phool/PHCompositeNode.h>
+
+#include <g4detectors/PHG4CylinderCellGeomContainer.h>
+#include <g4detectors/PHG4CylinderCellGeom.h>
 
 #include <trackbase/TrkrHitSetContainer.h>
 #include <trackbase/TrkrHitSet.h>
@@ -77,6 +81,11 @@
 #include <trackbase/TrkrDefs.h>
 
 #include <phool/getClass.h>
+
+#include <TFile.h>
+#include <TH1.h>
+#include <TH2.h>
+#include <TH3.h>
 
 #include <iostream>
 #include <string>
@@ -86,9 +95,12 @@
 using namespace std;
 
 //____________________________________________________________________________..
-readDigitalCurrents::readDigitalCurrents(const std::string &name):
+readDigitalCurrents::readDigitalCurrents(const std::string &name, const std::string &filename):
  SubsysReco(name)
-{
+ , hm(nullptr)
+ , _filename(filename)
+// , outfile(nullptr)
+ {
   std::cout << "readDigitalCurrents::readDigitalCurrents(const std::string &name) Calling ctor" << std::endl;
 }
 
@@ -96,12 +108,32 @@ readDigitalCurrents::readDigitalCurrents(const std::string &name):
 readDigitalCurrents::~readDigitalCurrents()
 {
   std::cout << "readDigitalCurrents::~readDigitalCurrents() Calling dtor" << std::endl;
+  delete hm;
+
 }
 
 //____________________________________________________________________________..
 int readDigitalCurrents::Init(PHCompositeNode *topNode)
 {
   std::cout << "readDigitalCurrents::Init(PHCompositeNode *topNode) Initializing" << std::endl;
+  double cm=1e-2; //changed to make 'm' 1.0, for convenience.
+
+  int nr=159;
+  int nphi=360;
+  int nz=62*2;
+  double z_rdo=105.5*cm;
+  double rmin=20*cm;
+  double rmax=78*cm;
+  cout << "CalculateDistortions::Init(PHCompositeNode *topNode) Initializing" << endl;
+  hm = new Fun4AllHistoManager("HITHIST");
+
+  _h_hits  = new TH1F("_h_hits" ,"_h_hits;N, [hit]"   ,4000,0,1e6);
+  _h_DC_SC = new TH3F("_h_DC_SC" ,"_h_DC_SC;#phi, [rad];R, [m];Z, [m]"   ,nphi,0,6.28319,nr,rmin,rmax,2*nz,-z_rdo,z_rdo);
+  _h_DC_E = new TH2F("_h_DC_E" ,"_h_DC_E;ADC;E"   ,200,-100,2e3-100,500,-100,5e3-100);
+  hm->registerHisto(_h_hits );
+  hm->registerHisto(_h_DC_SC );
+  hm->registerHisto(_h_DC_E );
+  //outfile = new TFile(_filename.c_str(), "RECREATE");
   return Fun4AllReturnCodes::EVENT_OK;
 }
 
@@ -120,7 +152,7 @@ int readDigitalCurrents::process_event(PHCompositeNode *topNode)
   set<std::string>::const_iterator iter;
   // //nodename << "G4HIT_TPC";
   nodename << "TRKR_HITSET";
-  
+
   // //  SvtxEvaluator
   // SvtxEvaluator *hits = findNode::getClass<SvtxEvaluator>(topNode, nodename.str().c_str());
   // //int n_hits = 0;
@@ -130,26 +162,62 @@ int readDigitalCurrents::process_event(PHCompositeNode *topNode)
   //===================================
   // get node containing the digitized hits
   TrkrHitSetContainer* _hitmap = findNode::getClass<TrkrHitSetContainer>(topNode, nodename.str().c_str());
+  if (!_hitmap)
+  {
+    std::cout << PHWHERE << "ERROR: Can't find node TRKR_HITSET" << std::endl;
+    return Fun4AllReturnCodes::ABORTRUN;
+  }
+  ostringstream geo_nodename;
+  geo_nodename << "CYLINDERCELLGEOM_SVTX";
 
+  PHG4CylinderCellGeomContainer* _geom_container =
+        findNode::getClass<PHG4CylinderCellGeomContainer>(topNode, geo_nodename.str().c_str());
 
+  if (!_geom_container)
+  {
+    std::cout << PHWHERE << "ERROR: Can't find node CYLINDERCELLGEOM_SVTX" << std::endl;
+    return Fun4AllReturnCodes::ABORTRUN;
+  }
   // loop over all the hits
   // hits are stored in hitsets, so have to get the hitset first
+  int n_hits = 0;
 
   TrkrHitSetContainer::ConstRange all_hitsets = _hitmap->getHitSets();
   for (TrkrHitSetContainer::ConstIterator iter = all_hitsets.first;
        iter != all_hitsets.second;
        ++iter)
   {    
+    unsigned int layer = TrkrDefs::getLayer(iter->first);
+    PHG4CylinderCellGeom *layergeom = _geom_container->GetLayerCellGeom(layer);
+    double radius = layergeom->get_radius();  // returns center of the layer
+    
     TrkrHitSet::ConstRange range = iter->second->getHits();
-    for(TrkrHitSet::ConstIterator hitr = range.first; hitr != range.second; ++hitr)
+    for(TrkrHitSet::ConstIterator hit_iter = range.first; hit_iter != range.second; ++hit_iter)
       {
-       //TrkrDefs::hitkey hit_key = hitr->first;
-       TrkrHit *hit = hitr->second;
+        n_hits++;
+
+       //TrkrDefs::hitkey hit_key = hit_iter->first;
+        unsigned short phibin = TpcDefs::getPad(hit_iter->first);
+        unsigned short zbin = TpcDefs::getTBin(hit_iter->first); 
+
+
+        double phi_center = layergeom->get_phicenter(phibin);
+        double z = layergeom->get_zcenter(zbin);  
+
+        TrkrHit *hit = hit_iter->second;
+
+
        unsigned short adc = hit->getAdc();
-       std::cout<<adc<<std::endl;
+       float E = hit->getEnergy();
+       //double z = 0;
+
+       _h_DC_E->Fill(adc,E);
+       _h_DC_SC->Fill(radius,phi_center,z,adc);
+       if(n_hits%100==0) std::cout<<radius<<"|"<<phi_center<<"|"<<z<<std::endl;
       }
     } 
   //TrkrHitSetContainer, TrkrHitSet, TrkrHit, and TrkrDefs objects used above in offline/packages/trackbase.
+  _h_hits->Fill(n_hits);
 
   return Fun4AllReturnCodes::EVENT_OK;
 }
@@ -172,6 +240,10 @@ int readDigitalCurrents::EndRun(const int runnumber)
 int readDigitalCurrents::End(PHCompositeNode *topNode)
 {
   std::cout << "readDigitalCurrents::End(PHCompositeNode *topNode) This is the End..." << std::endl;
+  _h_hits    ->Sumw2( false );
+  _h_DC_E   ->Sumw2( false );
+  hm->dumpHistos(_filename, "UPDATE");
+
   return Fun4AllReturnCodes::EVENT_OK;
 }
 

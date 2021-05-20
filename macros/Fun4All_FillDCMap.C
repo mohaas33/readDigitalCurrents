@@ -15,7 +15,7 @@ R__LOAD_LIBRARY(libfun4all.so)
 R__LOAD_LIBRARY(libreadDigitalCurrents.so)
 R__LOAD_LIBRARY(libg4dst.so)
 
-void Fun4All_FillDCMap(  const int nEvents = 10, const int eventsInFileStart = 0, const string &fname = "/sphenix/sim/sim01/sphnxpro/MDC1/pythia8_pp/PileUp/data/DST_TRKR_G4HIT_pythia8_mb-0000000001-01617.root" )
+void Fun4All_FillDCMap(  const int nEvents = 1, const int eventsInFileStart = 0, const string &fname = "/sphenix/user/frawley/new_macros_april27/macros/detectors/sPHENIX/Reconstructed_DST_Hijing_50kHz_00000.root" )
 {
   ///////////////////////////////////////////
   // Make the Server

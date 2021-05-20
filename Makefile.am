@@ -25,6 +25,7 @@ libreadDigitalCurrents_la_LIBADD = \
   -lphg4hit \
   -ltrackbase_historic_io \
   -ltrack_io \
+  -ltpc_io \
   -lg4detectors \
   -lg4testbench \
   -lSubsysReco

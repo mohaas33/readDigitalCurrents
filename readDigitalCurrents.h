@@ -7,13 +7,22 @@
 
 #include <string>
 
+class Fun4AllHistoManager;
 class PHCompositeNode;
+
+//class PHG4CylinderCellGeom;
+
+//class TFile;
+class TH1;
+class TH2;
+class TH3;
+
 
 class readDigitalCurrents : public SubsysReco
 {
  public:
 
-  readDigitalCurrents(const std::string &name = "readDigitalCurrents");
+  readDigitalCurrents(const std::string &name = "readDigitalCurrents", const std::string &filename = "DC_Hist.root");
 
   virtual ~readDigitalCurrents();
 
@@ -50,7 +59,17 @@ class readDigitalCurrents : public SubsysReco
 
   void Print(const std::string &what = "ALL") const override;
 
+ protected:
+   Fun4AllHistoManager *hm;
+   std::string _filename;
+   //TFile *outfile;
+
  private:
+    TH1*   _h_hits;
+    TH3*   _h_DC_SC;
+    TH2*   _h_DC_E;
+
+    float f=0.5;//for now, just pick the middle of the hit.  Do better later.
 };
 
 #endif // READDIGITALCURRENTS_H
