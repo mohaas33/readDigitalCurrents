@@ -15,8 +15,10 @@ R__LOAD_LIBRARY(libfun4all.so)
 R__LOAD_LIBRARY(libreadDigitalCurrents.so)
 R__LOAD_LIBRARY(libg4dst.so)
 
-void Fun4All_FillDCMap(  const int nEvents = 1, const int eventsInFileStart = 0, const string &fname = "/sphenix/user/frawley/new_macros_april27/macros/detectors/sPHENIX/Reconstructed_DST_Hijing_50kHz_00000.root" )
+void Fun4All_FillDCMap(  const int nEvents = 1000, const int eventsInFileStart = 0, const int eventsBeamCrossing = 1508071, const string &fname = "/sphenix/user/shulga/Work/IBF/macros/detectors/sPHENIX/Files/DST_G4Hits_sHijing_0-12fm_005000_006000.root", const string &foutputname = "./Files/hists_G4Hits_sHijing_0-12fm_000000_001000.root" )//DST_G4sPHENIX_1000evt.root")//G4sPHENIX.root" )
 {
+  // /sphenix/user/frawley/new_macros_april27/macros/detectors/sPHENIX/Reconstructed_DST_Hijing_50kHz_00000.root
+  
   ///////////////////////////////////////////
   // Make the Server
   //////////////////////////////////////////
@@ -24,10 +26,15 @@ void Fun4All_FillDCMap(  const int nEvents = 1, const int eventsInFileStart = 0,
   Fun4AllServer *se = Fun4AllServer::instance();
   string cd_name = "readDigitalCurrents"+std::to_string(eventsInFileStart);
   //cout<<fname_tmp<<endl;
-  //readDigitalCurrents *dist_calc = new readDigitalCurrents(cd_name, foutputname);
-  readDigitalCurrents *dist_calc = new readDigitalCurrents();
+  readDigitalCurrents *dist_calc = new readDigitalCurrents(cd_name, foutputname);
+  //readDigitalCurrents *dist_calc = new readDigitalCurrents();
   se->registerSubsystem(dist_calc);
-  
+  dist_calc->SetEvtStart(eventsInFileStart);
+  dist_calc->SetBeamXing(eventsBeamCrossing); // Set beam crosssing bias
+  dist_calc->SetCollSyst(0); //setting pp with = 1
+  dist_calc->SetIBF(0.004);
+
+
   // this (DST) input manager just drives the event loop
   Fun4AllInputManager *in = new Fun4AllDstInputManager("DSTin");
   in->fileopen(fname);

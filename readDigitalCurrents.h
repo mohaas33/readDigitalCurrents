@@ -5,7 +5,9 @@
 
 #include <fun4all/SubsysReco.h>
 
+#include <map>
 #include <string>
+#include <vector>
 
 class Fun4AllHistoManager;
 class PHCompositeNode;
@@ -22,7 +24,7 @@ class readDigitalCurrents : public SubsysReco
 {
  public:
 
-  readDigitalCurrents(const std::string &name = "readDigitalCurrents", const std::string &filename = "DC_Hist.root");
+  readDigitalCurrents(const std::string &name = "readDigitalCurrents", const std::string &filename = "DC_Hist_OnPlane_WIBF.root");
 
   virtual ~readDigitalCurrents();
 
@@ -59,15 +61,42 @@ class readDigitalCurrents : public SubsysReco
 
   void Print(const std::string &what = "ALL") const override;
 
+  void SetBeamXing(int newBeamXing);
+  void SetEvtStart(int newEvtStart);
+  void SetCollSyst(int coll_syst=0);
+  void SetIBF(float ampIBFfrac=0.004);
+
+
  protected:
    Fun4AllHistoManager *hm;
    std::string _filename;
    //TFile *outfile;
+   std::map<int,int> _timestamps;
+   std::vector<int> _keys;
+   float _ampIBFfrac;
+   int _collSyst;
 
  private:
+   int _beamxing = 0;
+   int _evtstart = 0;
+ 
+    TH2*   _h_modules_measuredibf;
+
     TH1*   _h_hits;
     TH3*   _h_DC_SC;
+    TH3*   _h_DC_SC_XY;
     TH2*   _h_DC_E;
+    TH3*   _h_SC_ibf;
+    float _event_timestamp;
+    float _event_bunchXing;
+
+
+    double cm=1e-2, mm=1e-3; //changed to make 'm' 1.0, for convenience.
+    float ns=1e-9,us=1e-6,ms=1e-3,s=1;
+    float V=1;
+    //float ionMobility=3.37*cm*cm/V/s;
+    float ionMobility=1.65*cm*cm/V/s;
+    float vIon=ionMobility*400*V/cm;
 
     float f=0.5;//for now, just pick the middle of the hit.  Do better later.
 };
