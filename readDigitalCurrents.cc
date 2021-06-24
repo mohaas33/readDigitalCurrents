@@ -1,65 +1,3 @@
-//____________________________________________________________________________..
-//
-// This is a template for a Fun4All SubsysReco module with all methods from the
-// $OFFLINE_MAIN/include/fun4all/SubsysReco.h baseclass
-// You do not have to implement all of them, you can just remove unused methods
-// here and in readDigitalCurrents.h.
-//
-// readDigitalCurrents(const std::string &name = "readDigitalCurrents")
-// everything is keyed to readDigitalCurrents, duplicate names do work but it makes
-// e.g. finding culprits in logs difficult or getting a pointer to the module
-// from the command line
-//
-// readDigitalCurrents::~readDigitalCurrents()
-// this is called when the Fun4AllServer is deleted at the end of running. Be
-// mindful what you delete - you do loose ownership of object you put on the node tree
-//
-// int readDigitalCurrents::Init(PHCompositeNode *topNode)
-// This method is called when the module is registered with the Fun4AllServer. You
-// can create historgrams here or put objects on the node tree but be aware that
-// modules which haven't been registered yet did not put antyhing on the node tree
-//
-// int readDigitalCurrents::InitRun(PHCompositeNode *topNode)
-// This method is called when the first event is read (or generated). At
-// this point the run number is known (which is mainly interesting for raw data
-// processing). Also all objects are on the node tree in case your module's action
-// depends on what else is around. Last chance to put nodes under the DST Node
-// We mix events during readback if branches are added after the first event
-//
-// int readDigitalCurrents::process_event(PHCompositeNode *topNode)
-// called for every event. Return codes trigger actions, you find them in
-// $OFFLINE_MAIN/include/fun4all/Fun4AllReturnCodes.h
-//   everything is good:
-//     return Fun4AllReturnCodes::EVENT_OK
-//   abort event reconstruction, clear everything and process next event:
-//     return Fun4AllReturnCodes::ABORT_EVENT; 
-//   proceed but do not save this event in output (needs output manager setting):
-//     return Fun4AllReturnCodes::DISCARD_EVENT; 
-//   abort processing:
-//     return Fun4AllReturnCodes::ABORT_RUN
-// all other integers will lead to an error and abort of processing
-//
-// int readDigitalCurrents::ResetEvent(PHCompositeNode *topNode)
-// If you have internal data structures (arrays, stl containers) which needs clearing
-// after each event, this is the place to do that. The nodes under the DST node are cleared
-// by the framework
-//
-// int readDigitalCurrents::EndRun(const int runnumber)
-// This method is called at the end of a run when an event from a new run is
-// encountered. Useful when analyzing multiple runs (raw data). Also called at
-// the end of processing (before the End() method)
-//
-// int readDigitalCurrents::End(PHCompositeNode *topNode)
-// This is called at the end of processing. It needs to be called by the macro
-// by Fun4AllServer::End(), so do not forget this in your macro
-//
-// int readDigitalCurrents::Reset(PHCompositeNode *topNode)
-// not really used - it is called before the dtor is called
-//
-// void readDigitalCurrents::Print(const std::string &what) const
-// Called from the command line - useful to print information when you need it
-//
-//____________________________________________________________________________..
 
 #include "readDigitalCurrents.h"
 
@@ -170,19 +108,85 @@ int readDigitalCurrents::Init(PHCompositeNode *topNode)
   std::cout << "readDigitalCurrents::Init(PHCompositeNode *topNode) Initializing" << std::endl;
 
   int nr=159;
-  int nphi=360;
-  int nz=62*2;
+  const int nphi=360;
+  const int nz=62*2;
   double z_rdo=105.5*cm;
-  double rmin=20*cm;
+  //double rmin=20*cm;
   double rmax=78*cm;
-  cout << "CalculateDistortions::Init(PHCompositeNode *topNode) Initializing" << endl;
-  hm = new Fun4AllHistoManager("HITHIST");
 
-  _h_hits  = new TH1F("_h_hits" ,"_h_hits;N, [hit]"   ,4000,0,1e6);
-  _h_SC_ibf  = new TH3F("_h_SC_ibf" ,"_h_SC_ibf;#phi, [rad];R, [m];Z, [m]"   ,nphi,0,6.28319,nr,rmin,rmax,2*nz,-z_rdo,z_rdo);
-  _h_DC_SC = new TH3F("_h_DC_SC" ,"_h_DC_SC;#phi, [rad];R, [m];Z, [m]"   ,nphi,0,6.28319,nr,rmin,rmax,2*nz,-z_rdo,z_rdo);
+  hm = new Fun4AllHistoManager("HITHIST");
+  const int r_bins_N = 98;
+  double r_bins[r_bins_N+1] = {0.20000, 0.22400,
+                      0.22400, 0.24800,
+                      0.24800, 0.27200,
+                      0.27200, 0.29600,
+                      0.30040, 0.30660,
+                      0.30660, 0.31280,
+                      0.31280, 0.31900,
+                      0.31900, 0.32520,
+                      0.32520, 0.33140,
+                      0.33140, 0.33760,
+                      0.33760, 0.34380,
+                      0.34380, 0.35000,
+                      0.35000, 0.35620,
+                      0.35620, 0.36240,
+                      0.36240, 0.36860,
+                      0.36860, 0.37480,
+                      0.37480, 0.38100,
+                      0.38100, 0.38720,
+                      0.38720, 0.39340,
+                      0.39340, 0.39960,
+                      0.41230, 0.42470,
+                      0.42470, 0.43710,
+                      0.43710, 0.44950,
+                      0.44950, 0.46190,
+                      0.46190, 0.47430,
+                      0.47430, 0.48670,
+                      0.48670, 0.49910,
+                      0.49910, 0.51150,
+                      0.51150, 0.52390,
+                      0.52390, 0.53630,
+                      0.53630, 0.54870,
+                      0.54870, 0.56110,
+                      0.56110, 0.57350,
+                      0.58809, 0.59891,
+                      0.59891, 0.60972,
+                      0.60972, 0.62053,
+                      0.62053, 0.63134,
+                      0.63134, 0.64216,
+                      0.64216, 0.65297,
+                      0.65297, 0.66378,
+                      0.66378, 0.67459,
+                      0.67459, 0.68541,
+                      0.68541, 0.69622,
+                      0.69622, 0.70703,
+                      0.70703, 0.71784,
+                      0.71784, 0.72866,
+                      0.72866, 0.73947,
+                      0.73947, 0.75028,
+                      0.75028, 0.76109,
+                      0.78};
+
+  _h_R  = new TH1F("_h_R" ,"_h_R;R, [m]"   ,r_bins_N ,r_bins);
+  _h_hits  = new TH1F("_h_hits" ,"_h_hits;N, [hit]"   ,1000,0,1e5);
+  //_h_SC_ibf  = new TH3F("_h_SC_ibf" ,"_h_SC_ibf;#phi, [rad];R, [m];Z, [m]"   ,nphi,0,6.28319,nr,rmin,rmax,2*nz,-z_rdo,z_rdo);
+  //_h_DC_SC = new TH3F("_h_DC_SC" ,"_h_DC_SC;#phi, [rad];R, [m];Z, [m]"   ,nphi,0,6.28319,nr,rmin,rmax,2*nz,-z_rdo,z_rdo);
+  //_h_DC_SC_XY = new TH3F("_h_DC_SC_XY" ,"_h_DC_SC_XY;X, [m];Y, [m];Z, [m]"   ,4*nr,-1*rmax,rmax,4*nr,-1*rmax,rmax,2*nz,-z_rdo,z_rdo);
+  //_h_DC_E = new TH2F("_h_DC_E" ,"_h_DC_E;ADC;E"   ,200,-100,2e3-100,500,-100,5e3-100);
+  
+  double phi_bins[nphi+1];
+  for (int p=0;p<=nphi;p++){
+    phi_bins[p]=6.28319/nphi*p;
+  } 
+  double z_bins[2*nz+1];
+  for (int z=0;z<=2*nz;z++){
+    z_bins[z]=-z_rdo+z_rdo/nz*z;
+  } 
+  _h_SC_ibf  = new TH3F("_h_SC_ibf" ,"_h_SC_ibf;#phi, [rad];R, [m];Z, [m]"   ,nphi,phi_bins,r_bins_N ,r_bins,2*nz,z_bins);
+  _h_DC_SC = new TH3F("_h_DC_SC" ,"_h_DC_SC;#phi, [rad];R, [m];Z, [m]"   ,nphi,phi_bins,r_bins_N ,r_bins,2*nz,z_bins);
   _h_DC_SC_XY = new TH3F("_h_DC_SC_XY" ,"_h_DC_SC_XY;X, [m];Y, [m];Z, [m]"   ,4*nr,-1*rmax,rmax,4*nr,-1*rmax,rmax,2*nz,-z_rdo,z_rdo);
   _h_DC_E = new TH2F("_h_DC_E" ,"_h_DC_E;ADC;E"   ,200,-100,2e3-100,500,-100,5e3-100);
+  hm->registerHisto(_h_R );
   hm->registerHisto(_h_hits );
   hm->registerHisto(_h_DC_SC );
   hm->registerHisto(_h_DC_SC_XY );
@@ -300,10 +304,9 @@ int readDigitalCurrents::process_event(PHCompositeNode *topNode)
   TrkrHitSetContainer::ConstRange all_hitsets = _hitmap->getHitSets();
   for (TrkrHitSetContainer::ConstIterator iter = all_hitsets.first;iter != all_hitsets.second; ++iter){    
     unsigned int layer = TrkrDefs::getLayer(iter->first);
-    
+    PHG4CylinderCellGeom *layergeom = _geom_container->GetLayerCellGeom(layer);
+    double radius = layergeom->get_radius()*cm;  // returns center of the layer    
     if(TrkrDefs::getTrkrId(iter->first) == TrkrDefs::tpcId){
-      PHG4CylinderCellGeom *layergeom = _geom_container->GetLayerCellGeom(layer);
-      double radius = layergeom->get_radius()*cm;  // returns center of the layer
       TrkrHitSet::ConstRange range = iter->second->getHits();
       for(TrkrHitSet::ConstIterator hit_iter = range.first; hit_iter != range.second; ++hit_iter){
         n_hits++;
@@ -327,6 +330,8 @@ int readDigitalCurrents::process_event(PHCompositeNode *topNode)
         double z_ibf =  -1*1e10;
 
         if(!IsOverFrame(radius/mm,phi_center)){
+          _h_R->Fill(radius);
+
           if(z>=0){
             //z_prim = z-(bX-_event_bunchXing)*106*vIon*ns;
             z_ibf = 1.05-(bX-_event_bunchXing)*106*vIon*ns;
@@ -387,6 +392,7 @@ int readDigitalCurrents::EndRun(const int runnumber)
 int readDigitalCurrents::End(PHCompositeNode *topNode)
 {
   std::cout << "readDigitalCurrents::End(PHCompositeNode *topNode) This is the End..." << std::endl;
+  _h_R     ->Sumw2( false );
   _h_hits     ->Sumw2( false );
   _h_DC_E     ->Sumw2( false );
   _h_DC_SC    ->Sumw2( false );

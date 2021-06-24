@@ -82,6 +82,7 @@ class readDigitalCurrents : public SubsysReco
  
     TH2*   _h_modules_measuredibf;
 
+    TH1*   _h_R;
     TH1*   _h_hits;
     TH3*   _h_DC_SC;
     TH3*   _h_DC_SC_XY;
