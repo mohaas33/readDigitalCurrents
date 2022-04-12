@@ -33,7 +33,7 @@ void Fun4All_FillDCMap(  const int nEvents = 1000, const int eventsInFileStart =
   dist_calc->SetBeamXing(eventsBeamCrossing); // Set beam crosssing bias
   dist_calc->SetCollSyst(0); //setting pp with = 1
   dist_calc->SetIBF(0.004);
-
+  dist_calc->SetCCGC(0);//to use PHG4CylinderCellGeom
 
   // this (DST) input manager just drives the event loop
   Fun4AllInputManager *in = new Fun4AllDstInputManager("DSTin");

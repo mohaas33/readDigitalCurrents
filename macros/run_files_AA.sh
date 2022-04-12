@@ -11,7 +11,7 @@ do
     let Xstart=f*1000 Xend=(f+1)*1000;
     A=$( printf '%06d' $Xstart )
     B=$( printf '%06d' $Xend )
-    fname="/sphenix/user/shulga/Work/IBF/macros/detectors/sPHENIX/Files/DST_G4Hits_sHijing_0-12fm_"$A"_"$B".root" ;
+    fname="/sphenix/user/shulga/Work/IBF/macros/detectors/sPHENIX/Files/DST_NoW_G4Hits_sHijing_0-12fm_"$A"_"$B".root" ;
     foutputname="/sphenix/user/shulga/Work/IBF/readDigitalCurrents/Files/hist_G4Hits_sHijing_0-12fm_bX"$bX"_"$A"_"$B".root" ;
     echo $fname ;
     echo $foutputname ;

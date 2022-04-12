@@ -12,6 +12,8 @@
 
 #include <g4detectors/PHG4CylinderCellGeomContainer.h>
 #include <g4detectors/PHG4CylinderCellGeom.h>
+#include <g4detectors/PHG4TpcCylinderGeomContainer.h>
+#include <g4detectors/PHG4TpcCylinderGeom.h>
 
 #include <trackbase/TrkrHitSetContainer.h>
 #include <trackbase/TrkrHitSet.h>
@@ -44,11 +46,11 @@ bool IsOverFrame(double r, double phi){
   double tpc_frame_r3_outer=758.4;//mm inner edge of larger-r frame of r3
   double tpc_frame_r3_inner=583.5;//mm outer edge of smaller-r frame of r3
  
-  double tpc_frame_r2_outer=574.9;//mm inner edge of larger-r frame of r3
-  double tpc_frame_r2_inner=411.4;//mm outer edge of smaller-r frame of r3
+  double tpc_frame_r2_outer=574.9;//mm inner edge of larger-r frame of r2
+  double tpc_frame_r2_inner=411.4;//mm outer edge of smaller-r frame of r2
  
-  double tpc_frame_r1_outer=402.6;//mm inner edge of larger-r frame of r3
-  double tpc_frame_r1_inner=221.0;//mm outer edge of smaller-r frame of r3
+  double tpc_frame_r1_outer=402.6;//mm inner edge of larger-r frame of r1
+  double tpc_frame_r1_inner=221.0;//mm outer edge of smaller-r frame of r1
  
   //double tpc_sec0_phi=0.0;//get_double_param("tpc_sec0_phi");
 
@@ -107,81 +109,68 @@ int readDigitalCurrents::Init(PHCompositeNode *topNode)
 {
   std::cout << "readDigitalCurrents::Init(PHCompositeNode *topNode) Initializing" << std::endl;
 
+  int nz=72;
+  double z_rdo=108*cm;
+
   int nr=159;
-  const int nphi=360;
-  const int nz=62*2;
-  double z_rdo=105.5*cm;
+  //const int nphi=128*3;
+  //const int nz=62*2;
+  //double z_rdo=105.5*cm;
   //double rmin=20*cm;
   double rmax=78*cm;
 
   hm = new Fun4AllHistoManager("HITHIST");
-  const int r_bins_N = 98;
-  double r_bins[r_bins_N+1] = {0.20000, 0.22400,
-                      0.22400, 0.24800,
-                      0.24800, 0.27200,
-                      0.27200, 0.29600,
-                      0.30040, 0.30660,
-                      0.30660, 0.31280,
-                      0.31280, 0.31900,
-                      0.31900, 0.32520,
-                      0.32520, 0.33140,
-                      0.33140, 0.33760,
-                      0.33760, 0.34380,
-                      0.34380, 0.35000,
-                      0.35000, 0.35620,
-                      0.35620, 0.36240,
-                      0.36240, 0.36860,
-                      0.36860, 0.37480,
-                      0.37480, 0.38100,
-                      0.38100, 0.38720,
-                      0.38720, 0.39340,
-                      0.39340, 0.39960,
-                      0.41230, 0.42470,
-                      0.42470, 0.43710,
-                      0.43710, 0.44950,
-                      0.44950, 0.46190,
-                      0.46190, 0.47430,
-                      0.47430, 0.48670,
-                      0.48670, 0.49910,
-                      0.49910, 0.51150,
-                      0.51150, 0.52390,
-                      0.52390, 0.53630,
-                      0.53630, 0.54870,
-                      0.54870, 0.56110,
-                      0.56110, 0.57350,
-                      0.58809, 0.59891,
-                      0.59891, 0.60972,
-                      0.60972, 0.62053,
-                      0.62053, 0.63134,
-                      0.63134, 0.64216,
-                      0.64216, 0.65297,
-                      0.65297, 0.66378,
-                      0.66378, 0.67459,
-                      0.67459, 0.68541,
-                      0.68541, 0.69622,
-                      0.69622, 0.70703,
-                      0.70703, 0.71784,
-                      0.71784, 0.72866,
-                      0.72866, 0.73947,
-                      0.73947, 0.75028,
-                      0.75028, 0.76109,
-                      0.78};
+  const int r_bins_N = 51;
+  double r_bins[r_bins_N+1] = {217.83, 
+                              311.05,317.92,323.31,329.27,334.63,340.59,345.95,351.91,357.27,363.23,368.59,374.55,379.91,385.87,391.23,397.19,402.49,
+                              411.53,421.70,431.90,442.11,452.32,462.52,472.73,482.94,493.14,503.35,513.56,523.76,533.97,544.18,554.39,564.59,574.76,
+                              583.67,594.59,605.57,616.54,627.51,638.48,649.45,660.42,671.39,682.36,693.33,704.30,715.27,726.24,737.21,748.18,759.11};
 
-  _h_R  = new TH1F("_h_R" ,"_h_R;R, [m]"   ,r_bins_N ,r_bins);
-  _h_hits  = new TH1F("_h_hits" ,"_h_hits;N, [hit]"   ,1000,0,1e5);
-  //_h_SC_ibf  = new TH3F("_h_SC_ibf" ,"_h_SC_ibf;#phi, [rad];R, [m];Z, [m]"   ,nphi,0,6.28319,nr,rmin,rmax,2*nz,-z_rdo,z_rdo);
-  //_h_DC_SC = new TH3F("_h_DC_SC" ,"_h_DC_SC;#phi, [rad];R, [m];Z, [m]"   ,nphi,0,6.28319,nr,rmin,rmax,2*nz,-z_rdo,z_rdo);
-  //_h_DC_SC_XY = new TH3F("_h_DC_SC_XY" ,"_h_DC_SC_XY;X, [m];Y, [m];Z, [m]"   ,4*nr,-1*rmax,rmax,4*nr,-1*rmax,rmax,2*nz,-z_rdo,z_rdo);
-  //_h_DC_E = new TH2F("_h_DC_E" ,"_h_DC_E;ADC;E"   ,200,-100,2e3-100,500,-100,5e3-100);
+  const int nphi=205;
+  double phi_bins[nphi+1] = {0.,0.0068, 0.038675, 0.07055, 0.102425, 0.1343, 0.166175, 0.19805, 
+                            0.229925, 0.2618, 0.293675, 0.32555, 0.357425, 0.3893, 0.421175, 0.45305, 0.484925, 
+                            0.5168, 0.5304, 0.562275, 0.59415, 0.626025, 0.6579, 0.689775, 0.72165, 0.753525, 0.7854, 
+                            0.817275, 0.84915, 0.881025, 0.9129, 0.944775, 0.97665, 1.008525, 1.0404, 1.054, 1.085875, 
+                            1.11775, 1.149625, 1.1815, 1.213375, 1.24525, 1.277125, 1.309, 1.340875, 1.37275, 1.404625, 1.4365, 
+                            1.468375, 1.50025, 1.532125, 1.564, 1.5776, 1.609475, 1.64135, 1.673225, 1.7051, 1.736975, 1.76885, 
+                            1.800725, 1.8326, 1.864475, 1.89635, 1.928225, 1.9601, 1.991975, 2.02385, 2.055725, 2.0876, 2.1012, 
+                            2.133075, 2.16495, 2.196825, 2.2287, 2.260575, 2.29245, 2.324325, 2.3562, 2.388075, 2.41995, 2.451825, 
+                            2.4837, 2.515575, 2.54745, 2.579325, 2.6112, 2.6248, 2.656675, 2.68855, 2.720425, 2.7523, 2.784175, 2.81605, 
+                            2.847925, 2.8798, 2.911675, 2.94355, 2.975425, 3.0073, 3.039175, 3.07105, 3.102925, 3.1348, 3.1484, 3.180275, 
+                            3.21215, 3.244025, 3.2759, 3.307775, 3.33965, 3.371525, 3.4034, 3.435275, 3.46715, 3.499025, 3.5309, 3.562775, 
+                            3.59465, 3.626525, 3.6584, 3.672, 3.703875, 3.73575, 3.767625, 3.7995, 3.831375, 3.86325, 3.895125, 3.927, 3.958875, 
+                            3.99075, 4.022625, 4.0545, 4.086375, 4.11825, 4.150125, 4.182, 4.1956, 4.227475, 4.25935, 4.291225, 4.3231, 4.354975, 
+                            4.38685, 4.418725, 4.4506, 4.482475, 4.51435, 4.546225, 4.5781, 4.609975, 4.64185, 4.673725, 4.7056, 4.7192, 4.751075, 
+                            4.78295, 4.814825, 4.8467, 4.878575, 4.91045, 4.942325, 4.9742, 5.006075, 5.03795, 5.069825, 5.1017, 5.133575, 5.16545, 
+                            5.197325, 5.2292, 5.2428, 5.274675, 5.30655, 5.338425, 5.3703, 5.402175, 5.43405, 5.465925, 5.4978, 5.529675, 5.56155, 
+                            5.593425, 5.6253, 5.657175, 5.68905, 5.720925, 5.7528, 5.7664, 5.798275, 5.83015, 5.862025, 5.8939, 5.925775, 5.95765, 
+                            5.989525, 6.0214, 6.053275, 6.08515, 6.117025, 6.1489, 6.180775, 6.21265, 6.244525, 6.2764,2*pi};
+
   
-  double phi_bins[nphi+1];
-  for (int p=0;p<=nphi;p++){
-    phi_bins[p]=6.28319/nphi*p;
-  } 
+  //double phi_bins[nphi+1];
+  //for (int p=0;p<=nphi;p++){
+  //  phi_bins[p]=6.28319/nphi*p;
+  //} 
   double z_bins[2*nz+1];
   for (int z=0;z<=2*nz;z++){
     z_bins[z]=-z_rdo+z_rdo/nz*z;
   } 
+
+  _h_R  = new TH1F("_h_R" ,"_h_R;R, [m]"   ,r_bins_N ,r_bins);
+  _h_hits  = new TH1F("_h_hits" ,"_h_hits;N, [hit]"   ,1e5,0-0.5,1e5-0.5);
+  //_h_SC_ibf  = new TH3F("_h_SC_ibf" ,"_h_SC_ibf;#phi, [rad];R, [m];Z, [m]"   ,nphi,0,6.28319,nr,rmin,rmax,2*nz,-z_rdo,z_rdo);
+  //_h_DC_SC = new TH3F("_h_DC_SC" ,"_h_DC_SC;#phi, [rad];R, [m];Z, [m]"   ,nphi,0,6.28319,nr,rmin,rmax,2*nz,-z_rdo,z_rdo);
+  _h_hit_XY = new TH2F("_h_hit_XY" ,"_h_hit_XY;X, [m];Y, [m]"   ,4*nr,-1*rmax,rmax,4*nr,-1*rmax,rmax);
+  //_h_DC_E = new TH2F("_h_DC_E" ,"_h_DC_E;ADC;E"   ,200,-100,2e3-100,500,-100,5e3-100);
+  
+  //double phi_bins[nphi+1];
+  //for (int p=0;p<=nphi;p++){
+  //  phi_bins[p]=6.28319/nphi*p;
+  //} 
+  //double z_bins[2*nz+1];
+  //for (int z=0;z<=2*nz;z++){
+  //  z_bins[z]=-z_rdo+z_rdo/nz*z;
+  //} 
   _h_SC_ibf  = new TH3F("_h_SC_ibf" ,"_h_SC_ibf;#phi, [rad];R, [m];Z, [m]"   ,nphi,phi_bins,r_bins_N ,r_bins,2*nz,z_bins);
   _h_DC_SC = new TH3F("_h_DC_SC" ,"_h_DC_SC;#phi, [rad];R, [m];Z, [m]"   ,nphi,phi_bins,r_bins_N ,r_bins,2*nz,z_bins);
   _h_DC_SC_XY = new TH3F("_h_DC_SC_XY" ,"_h_DC_SC_XY;X, [m];Y, [m];Z, [m]"   ,4*nr,-1*rmax,rmax,4*nr,-1*rmax,rmax,2*nz,-z_rdo,z_rdo);
@@ -190,6 +179,7 @@ int readDigitalCurrents::Init(PHCompositeNode *topNode)
   hm->registerHisto(_h_hits );
   hm->registerHisto(_h_DC_SC );
   hm->registerHisto(_h_DC_SC_XY );
+  hm->registerHisto(_h_hit_XY );
   hm->registerHisto(_h_DC_E );
   hm->registerHisto(_h_SC_ibf );
   //outfile = new TFile(_filename.c_str(), "RECREATE");
@@ -288,14 +278,26 @@ int readDigitalCurrents::process_event(PHCompositeNode *topNode)
   ostringstream geo_nodename;
   geo_nodename << "CYLINDERCELLGEOM_SVTX";
 
-  PHG4CylinderCellGeomContainer* _geom_container =
-        findNode::getClass<PHG4CylinderCellGeomContainer>(topNode, geo_nodename.str().c_str());
+  PHG4CylinderCellGeomContainer* _geom_container_ccgc = nullptr; 
+  PHG4TpcCylinderGeomContainer* _geom_container_cgc = nullptr;
+  if(_f_ccgc==1){
+    _geom_container_ccgc = findNode::getClass<PHG4CylinderCellGeomContainer>(topNode, geo_nodename.str().c_str());
+    if (!_geom_container_ccgc)
+    {
+      std::cout << PHWHERE << "ERROR: Can't find node CYLINDERCELLGEOM_SVTX" << std::endl;
+      return Fun4AllReturnCodes::ABORTRUN;
+    }
+  }else{
+    _geom_container_cgc = findNode::getClass<PHG4TpcCylinderGeomContainer>(topNode, geo_nodename.str().c_str());
 
-  if (!_geom_container)
-  {
-    std::cout << PHWHERE << "ERROR: Can't find node CYLINDERCELLGEOM_SVTX" << std::endl;
-    return Fun4AllReturnCodes::ABORTRUN;
+    if (!_geom_container_cgc)
+    {
+      std::cout << PHWHERE << "ERROR: Can't find node CYLINDERCELLGEOM_SVTX" << std::endl;
+      return Fun4AllReturnCodes::ABORTRUN;
+    }
   }
+
+
   // loop over all the hits
   // hits are stored in hitsets, so have to get the hitset first
   int n_hits = 0;
@@ -303,48 +305,75 @@ int readDigitalCurrents::process_event(PHCompositeNode *topNode)
   //float _event_bunchXing = 1508071;
   TrkrHitSetContainer::ConstRange all_hitsets = _hitmap->getHitSets();
   for (TrkrHitSetContainer::ConstIterator iter = all_hitsets.first;iter != all_hitsets.second; ++iter){    
-    unsigned int layer = TrkrDefs::getLayer(iter->first);
-    PHG4CylinderCellGeom *layergeom = _geom_container->GetLayerCellGeom(layer);
-    double radius = layergeom->get_radius()*cm;  // returns center of the layer    
+    //checking that the object is inside TPC
     if(TrkrDefs::getTrkrId(iter->first) == TrkrDefs::tpcId){
       TrkrHitSet::ConstRange range = iter->second->getHits();
+      unsigned int layer = TrkrDefs::getLayer(iter->first);
+      PHG4CylinderCellGeom *layergeom_ccgc = nullptr;
+      PHG4TpcCylinderGeom *layergeom_cgc = nullptr;
+      double radius = 0;
+      if(_f_ccgc==1){
+        layergeom_ccgc = _geom_container_ccgc->GetLayerCellGeom(layer);
+        radius = layergeom_ccgc->get_radius()*cm;
+      }else{
+        layergeom_cgc = _geom_container_cgc->GetLayerCellGeom(layer);
+        radius = layergeom_cgc->get_radius()*cm;
+      }
+      //PHG4TpcCylinderGeom *layergeom = _geom_container->GetLayerCellGeom(layer);
+      //double radius = layergeom->get_radius()*cm;  // returns center of the layer    
       for(TrkrHitSet::ConstIterator hit_iter = range.first; hit_iter != range.second; ++hit_iter){
-        n_hits++;
-        int f_fill_ibf=1;
+        int f_fill_ibf=0;
 
         //TrkrDefs::hitkey hit_key = hit_iter->first;
         unsigned short phibin = TpcDefs::getPad(hit_iter->first);
         unsigned short zbin = TpcDefs::getTBin(hit_iter->first); 
-        double phi_center = layergeom->get_phicenter(phibin);
+        double phi_center = 0;
+        if(_f_ccgc==1){
+          phi_center = layergeom_ccgc->get_phicenter(phibin);
+        }else{
+          phi_center = layergeom_cgc->get_phicenter(phibin);
+        }
         if (phi_center<0) phi_center+=2*pi;
 
         float x = radius*cos(phi_center);
         float y = radius*sin(phi_center);
-
-        double z = layergeom->get_zcenter(zbin)*cm;  
+        
+        _h_hit_XY->Fill( x, y);
+        double z = 0;// layergeom->get_zcenter(zbin)*cm;  
+        if(_f_ccgc==1){
+          z = layergeom_ccgc->get_zcenter(zbin)*cm;
+        }else{
+          z = layergeom_cgc->get_zcenter(zbin)*cm;
+        }
         TrkrHit *hit = hit_iter->second;
-        unsigned short adc = hit->getAdc();
+        unsigned short adc = hit->getAdc()-adc_pedestal;
         float E = hit->getEnergy();
         //double z = 0;
         //double z_prim = -1*1e10;
         double z_ibf =  -1*1e10;
 
-        if(!IsOverFrame(radius/mm,phi_center)){
-          _h_R->Fill(radius);
+        //if(!IsOverFrame(radius/mm,phi_center)){
+          
 
-          if(z>=0){
+          if(z>=0 && z<1.055*m){
+            if(adc>=0)n_hits++;
+            if(adc>=0)_h_DC_E->Fill(adc,E);
+
             //z_prim = z-(bX-_event_bunchXing)*106*vIon*ns;
-            z_ibf = 1.05-(bX-_event_bunchXing)*106*vIon*ns;
-            //if(n_hits%100==0)cout<<"z_ibf = "<<z_ibf<<"="<<"1.05-("<<bX<<"-"<<_event_bunchXing<<")*"<<106*vIon*ns<<endl;
-            if( z_ibf<=0){
-              f_fill_ibf=0;
+            z_ibf = 1.055*m-(bX-_event_bunchXing)*106*vIon*ns;
+            //if(n_hits%100==0)cout<<"z_ibf = "<<z_ibf<<"="<<"1.055*m-("<<bX<<"-"<<_event_bunchXing<<")*"<<106*vIon*ns<<endl;
+            if( z_ibf>0 && z_ibf<1.055*m){
+              f_fill_ibf=1;
             }
           }
-          if(z<0){
+          if(z<0 && z>-1.055*m){
+            if(adc>=0)n_hits++;
+            if(adc>=0)_h_DC_E->Fill(adc,E);
+
             //z_prim = z+(bX-_event_bunchXing)*106*vIon*ns;
-            z_ibf = -1.05+(bX-_event_bunchXing)*106*vIon*ns;
-            if( z_ibf>=0){
-              f_fill_ibf=0;
+            z_ibf = -1.055*m+(bX-_event_bunchXing)*106*vIon*ns;
+            if( z_ibf<0 && z_ibf>-1.055*m){
+              f_fill_ibf=1;
             }
           }        
 
@@ -356,13 +385,16 @@ int readDigitalCurrents::process_event(PHCompositeNode *topNode)
           int bin_y = _h_modules_measuredibf ->GetYaxis()->FindBin(y/mm);
           w_ibf = _h_modules_measuredibf->GetBinContent(bin_x,bin_y);
           //w_gain = _h_modules_anode->GetBinContent(bin_x,bin_y);
+          w_ibf = 1.;
         //}
           float w_adc = adc*w_ibf;
-          _h_DC_E->Fill(adc,E);
           _h_DC_SC->Fill(phi_center,radius,z,w_adc);        
           _h_DC_SC_XY->Fill(x,y,z,w_adc);
-          if(f_fill_ibf==1)_h_SC_ibf  ->Fill(phi_center,radius,z_ibf,w_adc);
-        }
+          if(f_fill_ibf==1){
+            _h_SC_ibf  ->Fill(phi_center,radius,z_ibf,w_adc);
+            _h_R->Fill(radius);
+          }
+        //}
         //if(n_hits%100==0) std::cout<<radius<<"|"<<phi_center<<"|"<<z<<std::endl;
       }
     }
@@ -396,6 +428,7 @@ int readDigitalCurrents::End(PHCompositeNode *topNode)
   _h_hits     ->Sumw2( false );
   _h_DC_E     ->Sumw2( false );
   _h_DC_SC    ->Sumw2( false );
+  _h_hit_XY ->Sumw2( false );
   _h_DC_SC_XY ->Sumw2( false );
   _h_SC_ibf   ->Sumw2( false );
   hm->dumpHistos(_filename, "RECREATE");
@@ -437,3 +470,10 @@ void readDigitalCurrents::SetIBF(float ampIBFfrac){
   _ampIBFfrac = ampIBFfrac;
   cout<<"IBF is set to: "<<_ampIBFfrac<<endl;
 }
+
+void readDigitalCurrents::SetCCGC(float f_ccgc){
+  _f_ccgc = f_ccgc;
+  cout<<"IBF is set to: "<<_f_ccgc<<endl;
+}
+
+

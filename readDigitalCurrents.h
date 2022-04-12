@@ -9,6 +9,9 @@
 #include <string>
 #include <vector>
 
+#pragma once 
+#include <math.h>
+
 class Fun4AllHistoManager;
 class PHCompositeNode;
 
@@ -65,7 +68,9 @@ class readDigitalCurrents : public SubsysReco
   void SetEvtStart(int newEvtStart);
   void SetCollSyst(int coll_syst=0);
   void SetIBF(float ampIBFfrac=0.004);
+  void SetCCGC(float f_ccgc=0);
 
+  double pi = 2 * acos(0.0);
 
  protected:
    Fun4AllHistoManager *hm;
@@ -79,20 +84,23 @@ class readDigitalCurrents : public SubsysReco
  private:
    int _beamxing = 0;
    int _evtstart = 0;
- 
+
+    int _f_ccgc = 0;
+
     TH2*   _h_modules_measuredibf;
 
     TH1*   _h_R;
     TH1*   _h_hits;
     TH3*   _h_DC_SC;
     TH3*   _h_DC_SC_XY;
+    TH2*   _h_hit_XY;
     TH2*   _h_DC_E;
     TH3*   _h_SC_ibf;
     float _event_timestamp;
     float _event_bunchXing;
 
-
-    double cm=1e-2, mm=1e-3; //changed to make 'm' 1.0, for convenience.
+    double adc_pedestal=74.4;
+    double cm=1e1,m=1e3, mm=1; //changed to make 'm' 1.0, for convenience.
     float ns=1e-9,us=1e-6,ms=1e-3,s=1;
     float V=1;
     //float ionMobility=3.37*cm*cm/V/s;
